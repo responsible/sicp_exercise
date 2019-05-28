@@ -1,0 +1,190 @@
+#+title: Exercise1.1
+#+date: <2019-05-22 Wed>
+#+author: responsible
+
+* 1.1
+** 1.1
+#+BEGIN_SRC scheme
+ 10
+ 12
+ 8
+ 3
+ 6
+ 19
+ #f
+ 4
+ 16
+ 6
+ 16
+#+END_SRC
+
+** 1.2
+#+BEGIN_SRC scheme :exports both
+  (/ (+ 5 4
+        (- 2
+           (- 3
+              (+ 6 (/ 4 5)))))
+     (* 3 (- 6 2) (- 2 7)))
+#+END_SRC
+
+#+RESULTS:
+: -37/150
+
+** 1.3
+#+BEGIN_SRC scheme :results output :exports both
+  (define (max-two-square-sum x y z)
+    (define (square x)
+      (* x x))
+    (define (min x y)
+      (if (< x y)
+          x
+          y))
+    (+ (square x) (square y) (square z)
+       (- (square(min (min x y) z)))))
+  (println (max-two-square-sum 2 5 1))
+  (println (max-two-square-sum 3 2 1))
+  (println (max-two-square-sum -9 4 0))
+#+END_SRC
+
+#+RESULTS:
+: 29
+: 13
+: 16
+
+
+** 1.4
+#+BEGIN_SRC scheme :results output :exports both
+  (define (a-plus-abs-b a b)
+    ((if (> b 0) + -) a b))
+
+  (println (a-plus-abs-b 4 2))
+  (println ((if (> 2 0) + -) 4 2))
+  (println ((if #t + -) 4 2))
+  (println (+ 4 2))
+  (println 6)
+#+END_SRC
+
+#+RESULTS:
+: 6
+: 6
+: 6
+: 6
+: 6
+
+** 1.5
+#+BEGIN_SRC scheme :results output :exports both
+  (define (p) (p))
+
+  (define (test x y)
+    (if (= x 0)
+        0
+        y))
+
+  ;; Applicative Order
+  (test 0 (p))
+  (test 0 (p))
+  (test 0 (p))
+  ...
+
+  ;; Normal Order
+  (test 0 (p))
+
+  (if (= 0 0)
+      0
+      (p))
+
+  (if #t 0 (p))
+
+  0
+#+END_SRC
+
+** 1.6
+*** infinite loop on procedure "sqrt-iter" because "new-if" is a procedure and will evaluate all parameters.
+
+** 1.7
+*** For small number, (abs (- (square guess) x)) is far less than tolerance, so it's not good enough in fact
+*** For large number, the tolerance 0.001 is too small, (abs (- (square largeNumber) anotherLargeNumber)) will never less than 0.001, so this is a infinite loop
+*** The new good-enough? procedure works better for both small and large numbers
+#+BEGIN_SRC scheme :results output :exports both
+  (define (sqrt x)
+    (sqrt-iter 1.0 x))
+
+  ;; old good enough procedure
+  ;; (define (sqrt-iter guess x)
+  ;;   (if (good-enough? guess x)
+  ;;       guess
+  ;;       (sqrt-iter (improve guess x) x)))
+
+  ;; (define (good-enough? guess x)
+  ;;   (< (abs (- (square guess) x)) 0.001))
+
+  (define (sqrt-iter guess x)
+    (define next-guess (improve guess x))
+    (if (good-enough? guess next-guess x)
+        guess
+        (sqrt-iter next-guess x)))
+
+  (define (good-enough? guess next-guess x)
+    (< (/ (abs (- guess next-guess))
+          guess)
+       0.001))
+
+  (define (improve guess x)
+    (avg guess
+         (/ x guess)))
+
+  (define (avg a b)
+    (/ (+ a b) 2))
+
+  (define (abs x)
+    (if (< x 0)
+        (- x)
+        x))
+
+  (define (square x)
+    (* x x))
+
+  (println (sqrt 0.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007))
+  (println (sqrt 999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999))
+#+END_SRC
+
+#+RESULTS:
+: 2.6457765234334363e-77
+: 1.0000070600899894e+57
+
+** 1.8
+#+BEGIN_SRC scheme :results output :exports both
+  (define (cubic-root x)
+    (define (cubic-iter guess)
+      (if (good-enough? guess)
+          guess
+          (cubic-iter (improve-guess guess))))
+
+    (define (good-enough? guess)
+      (< (abs (- (cubic guess) x)) 0.001))
+
+    (define (improve-guess guess)
+      (/ (+ (/ x (square guess))
+            (* 2 guess))
+         3))
+
+    (define (abs x)
+      (if (< x 0)
+          (- x)
+          x))
+
+    (define (square x)
+      (* x x))
+
+    (define (cubic x)
+      (* x (square x)))
+
+    (cubic-iter 1.0))
+
+  (println (cubic-root 8))
+  (println (cubic-root 729))
+#+END_SRC
+
+#+RESULTS:
+: 2.000004911675504
+: 9.000000000053902
