@@ -1,0 +1,890 @@
+#+title: Exercise2.2
+#+date: <2019-06-29 Sat>
+#+author: responsible
+
+* 2.2
+** 2.17
+   #+begin_src scheme :exports both
+  (define (last-pair items)
+    (if (null? (cdr items))
+        (car items)
+        (last-pair (cdr items))))
+
+  (last-pair (list 23 72 149 34))
+   #+end_src
+
+   #+RESULTS:
+   | 34 |
+
+** 2.18
+   #+begin_src scheme :results output :exports both
+  (define (reverse items)
+    (if (null? items)
+        '()
+        (append (reverse (cdr items))
+                (list (car items)))))
+
+  (println (reverse (list 1 4 9 16 25)))
+   #+end_src
+
+   #+RESULTS:
+   : '(25 16 9 4 1)
+
+** 2.19
+   #+begin_src scheme :exports both
+  (define us-coins (list 50 25 10 5 1))
+
+  (define (first-denomination coins)
+    (car coins))
+
+  (define (except-first-denomination coins)
+    (cdr coins))
+
+  (define (no-more? coins)
+    (null? coins))
+
+  (define (cc amount coin-values)
+    (cond [(= amount 0) 1]
+          [(or (< amount 0) (no-more? coin-values)) 0]
+          [else
+           (+ (cc amount
+                  (except-first-denomination coin-values))
+              (cc (- amount
+                     (first-denomination coin-values))
+                  coin-values))]))
+
+  (cc 100 us-coins)
+   #+end_src
+
+   #+RESULTS:
+   : 292
+
+** 2.20
+   #+begin_src scheme :results output :exports both
+  (define (same-parity first . rest)
+    (define (same-parity-inner rest)
+      (if (null? rest)
+          '()
+          (if (= (remainder (+ first (car rest)) 2) 0)
+              (cons (car rest)
+                    (same-parity-inner (cdr rest)))
+              (same-parity-inner (cdr rest)))))
+    (cons first (same-parity-inner rest)))
+
+  (println (same-parity 1 2 3 4 5 6 7))
+  (println (same-parity 2 3 4 5 6 7))
+   #+end_src
+
+   #+RESULTS:
+   : '(1 3 5 7)
+   : '(2 4 6)
+
+** 2.21
+   #+begin_src scheme :results output :exports both
+  (define (square-list1 items)
+    (if (null? items)
+        '()
+        (cons (sqr (car items))
+              (square-list1 (cdr items)))))
+
+  (define (square-list2 items)
+    (map sqr items))
+
+  (println (square-list1 (list 1 2 3 4)))
+  (println (square-list2 (list 1 2 3 4)))
+   #+end_src
+
+   #+RESULTS:
+   : '(1 4 9 16)
+   : '(1 4 9 16)
+
+** 2.22
+   1) The parameter of cons should be swap.
+   2) The first parameter of cons should not a list
+   #+begin_src scheme
+  (define (square-list items)
+    (define (iter things answer)
+      (if (null? things)
+          answer
+          (iter (cdr things)
+                (append answer
+                        (list (square (car things)))))))
+    (iter items '()))
+   #+end_src
+
+** 2.23
+   #+begin_src scheme :results output :exports both
+  (define (for-each proc items)
+    (cond [(not (null? items))
+           (proc (car items))
+           (for-each proc (cdr items))]))
+
+  (for-each (lambda (x) (newline) (display x))
+            (list 57 321 88))
+   #+end_src
+
+   #+RESULTS:
+   :
+   : 57
+   : 321
+   : 88
+
+** 2.24
+   #+begin_src scheme
+  (1 (2 (3 4)))
+   #+end_src
+
+** 2.25
+   #+begin_src scheme :results output :exports both
+  (define list1 (list 1 3 (list 5 7) 9))
+  (define list2 (list (list 7)))
+  (define list3 (list 1 (list 2 (list 3 (list 4 (list 5 (list 6 7)))))))
+
+  (println (car (cdr (car (cdr (cdr list1))))))
+  (println (car (car list2)))
+  (println (car (cdr (car (cdr (car (cdr (car (cdr (car (cdr (car (cdr list3)))))))))))))
+   #+end_src
+
+   #+RESULTS:
+   : 7
+   : 7
+   : 7
+
+** 2.26
+   #+begin_src scheme
+  (define x (list 1 2 3))
+  (define y (list 4 5 6))
+  (append x y) ;;(1 2 3 4 5 6)
+
+  (cons x y) ;;((1 2 3) 4 5 6)
+
+  (list x y) ;;((1 2 3) (4 5 6))
+   #+end_src
+
+** 2.27
+   #+begin_src scheme :results output :exports both
+  (define (deep-reverse items)
+    (cond [(null? items) '()]
+          [(not (pair? items)) items]
+          [else (append (deep-reverse (cdr items))
+                        (list (deep-reverse (car items))))]))
+
+  (define x (list (list 1 2) (list 3 4)))
+  (println (deep-reverse x))
+   #+end_src
+
+   #+RESULTS:
+   : '((4 3) (2 1))
+
+** 2.28
+   #+begin_src scheme :results output :exports both
+  (define (fringe items)
+    (cond [(null? items) '()]
+          [(not (pair? items)) (list items)]
+          [else (append (fringe (car items))
+                        (fringe (cdr items)))]))
+
+  (define x (list (list 1 2) (list 3 4)))
+
+  (println (fringe x))
+
+  (println (fringe (list x x)))
+   #+end_src
+
+   #+RESULTS:
+   : '(1 2 3 4)
+   : '(1 2 3 4 1 2 3 4)
+
+** 2.29
+   #+begin_src scheme :results output :exports both
+  (define (make-mobile left right)
+    (list left right))
+
+  (define (make-branch length structure)
+    (list length structure))
+
+  (define (left-branch mobile)
+    (car mobile))
+
+  (define (right-branch mobile)
+    (car (cdr mobile)))
+
+  (define (branch-length branch)
+    (car branch))
+
+  (define (branch-structure branch)
+    (car (cdr branch)))
+
+  (define (branch-weight branch)
+    (let ((branch-item (branch-structure branch)))
+      (if (pair? branch-item)
+          (total-weight branch-item)
+          branch-item)))
+
+  (define (total-weight mobile)
+    (+ (branch-weight (left-branch mobile))
+       (branch-weight (right-branch mobile))))
+
+  (define (mobile-balance? mobile)
+    (define (torque branch)
+      (* (branch-length branch)
+         (branch-weight branch)))
+    (define (is-not-mobile? branch-item)
+      (not (pair? branch-item)))
+    (let ((left-branch-item (branch-structure (left-branch mobile)))
+          (right-branch-item (branch-structure (right-branch mobile))))
+      (and (= (torque (left-branch mobile))
+              (torque (right-branch mobile)))
+           (and (or (is-not-mobile? left-branch-item) (mobile-balance? left-branch-item))
+                (or (is-not-mobile? right-branch-item) (mobile-balance? right-branch-item))))))
+
+  (define mobile (make-mobile (make-branch 5 10)
+                              (make-branch 3
+                                           (make-mobile (make-branch 1 2)
+                                                        (make-branch 8 4)))))
+
+  (define balanced-mobile (make-mobile (make-branch 6 6)
+                                       (make-branch 3
+                                                    (make-mobile (make-branch 1 8)
+                                                                 (make-branch 2 4)))))
+
+  (println (total-weight mobile))
+  (println (mobile-balance? mobile))
+
+  (println (total-weight balanced-mobile))
+  (println (mobile-balance? balanced-mobile))
+   #+end_src
+
+   #+RESULTS:
+   : 16
+   : #f
+   : 18
+   : #t
+
+   Only need to change selector function ~right-branch~ and ~branch-structure~
+
+** 2.30
+   #+begin_src scheme :results output :exports both
+  (define (square-tree1 tree)
+    (cond [(null? tree) '() ]
+          [(not (pair? tree)) (sqr tree)]
+          [else (cons (square-tree1 (car tree))
+                      (square-tree1 (cdr tree)))]))
+
+  (define (square-tree2 tree)
+    (map (λ (tree-item)
+           (if (not (pair? tree-item))
+               (sqr tree-item)
+               (square-tree2 tree-item)))
+         tree))
+
+  (define tree (list 1
+                     (list 2 (list 3 4) 5)
+                     (list 6 7)))
+
+  (println (square-tree1 tree))
+  (println (square-tree2 tree))
+   #+end_src
+
+   #+RESULTS:
+   : '(1 (4 (9 16) 25) (36 49))
+   : '(1 (4 (9 16) 25) (36 49))
+
+** 2.31
+   #+begin_src scheme :results output :exports both
+  (define (tree-map func tree)
+    (map (λ (tree-item)
+           (if (not (pair? tree-item))
+               (func tree-item)
+               (tree-map func tree-item)))
+         tree))
+
+  (define (square-tree tree) (tree-map sqr tree))
+
+  (define tree (list 1
+                     (list 2 (list 3 4) 5)
+                     (list 6 7)))
+
+  (println (square-tree tree))
+   #+end_src
+
+   #+RESULTS:
+   : '(1 (4 (9 16) 25) (36 49))
+
+** 2.32
+   #+begin_src scheme :results output :exports both
+  (define (subsets s)
+    (if (null? s)
+        (list null)
+        (let ((rest (subsets (cdr s))))
+          (append rest (map (λ (rest-item)
+                              (cons (car s) rest-item))
+                            rest)))))
+
+  (println (subsets (list 1 2 3)))
+   #+end_src
+
+   #+RESULTS:
+   : '(() (3) (2) (2 3) (1) (1 3) (1 2) (1 2 3))
+
+** 2.33
+   #+NAME: define-accumulate
+   #+begin_src scheme
+  (define (accumulate op initial sequence)
+    (if (null? sequence)
+        initial
+        (op (car sequence)
+            (accumulate op initial (cdr sequence)))))
+   #+end_src
+   #+begin_src scheme :results output :exports both :noweb yes
+   <<define-accumulate>>
+
+  (define (map p sequence)
+    (accumulate (lambda (x y) (cons (p x) y)) null sequence))
+
+  (define (append seq1 seq2)
+    (accumulate cons seq2 seq1))
+
+  (define (length sequence)
+    (accumulate (λ (x y) (+ 1 y)) 0 sequence))
+
+  (define sequence1 (list 1 2 3 4 5))
+  (define sequence2 (list 6 7 8 9 10))
+  (println (map sqr sequence1))
+  (println (append sequence1 sequence2))
+  (println (length sequence2))
+   #+end_src
+
+   #+RESULTS:
+   : '(1 4 9 16 25)
+   : '(1 2 3 4 5 6 7 8 9 10)
+   : 5
+
+** 2.34
+   #+begin_src scheme :results output :exports both :noweb yes
+   <<define-accumulate>>
+
+  (define (horner-eval x coefficient-sequence)
+    (accumulate (lambda (this-coeff higher-terms) (+ this-coeff (* x higher-terms)))
+                0
+                coefficient-sequence))
+
+  (println (horner-eval 2 (list 1 3 0 5 0 1)))
+   #+end_src
+
+   #+RESULTS:
+   : 79
+
+** 2.35
+   #+begin_src scheme :results output :exports both :noweb yes
+   <<define-accumulate>>
+  (define (accumulate op initial sequence)
+    (if (null? sequence)
+        initial
+        (op (car sequence)
+            (accumulate op initial (cdr sequence)))))
+
+  (define (origin-count-leaves x)
+    (cond [(null? x) 0]
+          [(not (pair? x)) 1]
+          [else (+ (origin-count-leaves (car x))
+                   (origin-count-leaves (cdr x)))]))
+
+  (define (count-leaves t)
+    (accumulate +
+                0
+                (map (λ (leaf)
+                       (if (pair? leaf)
+                           (count-leaves leaf)
+                           1))
+                     t)))
+
+  (define x (list (list 1 2 (list 3 4)) (list 5 6) (list 7 8)))
+  (println (origin-count-leaves x))
+  (println (count-leaves x))
+   #+end_src
+
+   #+RESULTS:
+   : 8
+   : 8
+
+** 2.36
+   #+NAME: define-accumulate-n
+   #+begin_src scheme
+  (define (accumulate-n op init seqs)
+    (if (null? (car seqs))
+        null
+        (cons (accumulate op init (map car seqs))
+              (accumulate-n op init (map cdr seqs)))))
+   #+end_src
+
+   #+begin_src scheme :results output :exports both :noweb yes
+   <<define-accumulate>>
+   <<define-accumulate-n>>
+
+  (define s '((1 2 3) (4 5 6) (7 8 9) (10 11 12)))
+  (println (accumulate-n + 0 s))
+   #+end_src
+
+   #+RESULTS:
+   : '(22 26 30)
+
+** 2.37
+   #+begin_src scheme :results output :exports both :noweb yes
+   <<define-accumulate>>
+   <<define-accumulate-n>>
+
+  (define (dot-product v w)
+    (accumulate + 0 (map * v w)))
+
+  (define (matrix-*-vector m v)
+    (map (λ (row) (dot-product row v)) m))
+
+  (define (transpose mat)
+    (accumulate-n cons null mat))
+
+  (define (matrix-*-matrix m n)
+    (let ((cols (transpose n)))
+      (map (λ (row) (matrix-*-vector cols row)) m)))
+
+  (define matrix '((1 2 3 4) (4 5 6 6) (6 7 8 9) (10 11 12 13)))
+  (define vector '(1 2 3 4))
+
+  (println (dot-product vector vector))
+  (println (matrix-*-vector matrix vector))
+  (println (transpose matrix))
+  (println (matrix-*-matrix matrix matrix))
+   #+end_src
+
+   #+RESULTS:
+   : 30
+   : '(30 56 80 120)
+   : '((1 4 6 10) (2 5 7 11) (3 6 8 12) (4 6 9 13))
+   : '((67 77 87 95) (120 141 162 178) (172 202 232 255) (256 302 348 383))
+
+** 2.38
+   #+NAME: define-fold-left-and-right
+   #+begin_src scheme
+  (define (fold-right op initial sequence)
+    (if (null? sequence)
+        initial
+        (op (car sequence)
+            (fold-right op initial (cdr sequence)))))
+
+  (define (fold-left op initial sequence)
+    (define (iter result rest)
+      (if (null? rest)
+          result
+          (iter (op result (car rest))
+                (cdr rest))))
+    (iter initial sequence))
+   #+end_src
+
+   #+begin_src scheme :results output :exports both :noweb yes
+   <<define-fold-left-and-right>>
+
+  (fold-right / 1 (list 1 2 3)) ;; (/ 1 (/ 2 (/ 3 1))) = 3/2
+
+  (fold-left / 1 (list 1 2 3)) ;; (/ (/ (/ 1 1) 2) 3) = 1/6
+
+  (fold-right list null (list 1 2 3)) ;; '(1 (2 (3 ()))
+
+  (fold-left list null (list 1 2 3)) ;; '(((() 1) 2) 3)
+   #+end_src
+
+** 2.39
+   #+begin_src scheme :results output :exports both :noweb yes
+   <<define-fold-left-and-right>>
+
+  (define (fold-right-reverse sequence)
+    (fold-right (λ (x y) (append y (list x))) null sequence))
+
+  (define (fold-left-reverse sequence)
+    (fold-left (λ (x y) (cons y x)) null sequence))
+
+  (println (fold-right-reverse (list 1 2 3)))
+  (println (fold-left-reverse (list 1 2 3)))
+   #+end_src
+
+   #+RESULTS:
+   : '(3 2 1)
+   : '(3 2 1)
+
+** 2.40
+   #+begin_src scheme :results output :exports both
+  (require math/number-theory)
+
+  (define (enumerate-interval low high)
+    (if (> low high)
+        null
+        (cons low (enumerate-interval (+ low 1) high))))
+
+  (define flatmap append-map)
+
+  (define (unique-pairs n)
+    (flatmap (λ (i)
+               (map (λ (j) (list j i))
+                    (enumerate-interval 1 (- i 1))))
+             (enumerate-interval 1 n)))
+
+  (define (prime-sum? pair)
+    (prime? (+ (car pair) (cadr pair))))
+
+  (define (make-pair-sum pair)
+    (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+
+  (define (prime-sum-pairs n)
+    (map make-pair-sum
+         (filter prime-sum?
+                 (unique-pairs n))))
+
+  (println (prime-sum-pairs 6))
+   #+end_src
+
+   #+RESULTS:
+   : '((1 2 3) (2 3 5) (1 4 5) (3 4 7) (2 5 7) (1 6 7) (5 6 11))
+
+** 2.41
+   #+begin_src scheme :results output :exports both
+  (define (enumerate-interval low high) (range low (+ high 1)))
+
+  (define flatmap append-map)
+
+  (define (unique-pairs n)
+    (flatmap (λ (i)
+               (map (λ (j) (list j i))
+                    (enumerate-interval 1 (- i 1))))
+             (enumerate-interval 1 n)))
+
+  (define (distinct-positive-integers-equal-to n s)
+    (filter (λ (pair) (= s (+ (car pair) (cadr pair) (caddr pair))))
+            (flatmap (λ (k)
+                       (map (λ (i-j-pair)
+                              (append i-j-pair (list k)))
+                            (unique-pairs (- k 1))))
+                     (enumerate-interval 1 n))))
+
+  (println (distinct-positive-integers-equal-to 14 14))
+   #+end_src
+
+   #+RESULTS:
+   : '((3 5 6) (3 4 7) (2 5 7) (1 6 7) (2 4 8) (1 5 8) (2 3 9) (1 4 9) (1 3 10) (1 2 11))
+
+** TODO 2.42
+   #+begin_src scheme :results output :exports both
+  (define flatmap append-map)
+
+  (define (enumerate-interval low high) (range low (+ high 1)))
+
+  (define empty-board '())
+
+  (define (adjoin-position new-row col rest-of-queens)
+    (if (null? rest-of-queens)
+        (list new-row col)
+        (map (λ (rest-of-queen)
+               (list (list new-row col) rest-of-queen))
+             rest-of-queens)))
+
+  (define (safe? col positions)
+    (define (position-same-row? position1 position2)
+      (= (car position1) (car position2)))
+    (define (position-same-diagonal? position1 position2)
+      (= (- (car position1) (car position2))
+         (- (cdr position1) (cdr position2))))
+    (let [(new-position (car positions))
+          (rest-position (cadr positions))]
+      (and (not (position-same-row? new-position rest-position))
+           (not (position-same-diagonal? new-position rest-position))
+           (safe? col (list new-position (cddr positions))))))
+
+  ;; (define (safe? col positions)
+  ;;   (define (position-same-row? position1 position2)
+  ;;     (= (car position1) (car position2)))
+  ;;   (define (position-same-diagonal? position1 position2)
+  ;;     (= (- (car position1) (car position2))
+  ;;        (- (cdr position1) (cdr position2))))
+  ;;   (let [(new-position (car positions))]
+  ;;     (map (λ (rest-position)
+  ;;            (and (not (position-same-row? new-position rest-position))
+  ;;                 (not (position-same-diagonal? new-position rest-position))))
+  ;;          (cdr positions))))
+
+  (define (queens board-size)
+    (define (queen-cols k)
+      (if (= k 0)
+          (list empty-board)
+          (filter
+           (lambda (positions) (safe? k positions))
+           (flatmap
+            (lambda (rest-of-queens)
+              (map (lambda (new-row)
+                     (adjoin-position new-row k rest-of-queens))
+                   (enumerate-interval 1 board-size)))
+            (queen-cols (- k 1))))))
+    (queen-cols board-size))
+
+  (println (queens 4))
+   #+end_src
+
+   #+RESULTS:
+   : car: contract violation
+   :   expected: pair?
+   :   given: 1
+   :
+
+** TODO 2.43
+
+** TODO 2.44
+
+** 2.53
+   #+begin_src scheme
+  (list 'a 'b 'c) ;; '(a b c)
+
+  (list (list 'george)) ;; '((george))
+  (cdr '((x1 x2) (y1 y2))) ;; '((y1 y2))
+
+  (cadr '((x1 x2) (y1 y2))) ;; '(y1 y2)
+  (pair? (car '(a short list))) ;; #f
+  (memq 'red '((red shoes) (blue socks))) ;; #f
+
+  (memq 'red '(red shoes blue socks)) ;; '(red shoes blue socks)
+   #+end_src
+
+** 2.54
+   #+begin_src scheme :results output :exports both
+  (define (equal? a b)
+    (cond [(and (not (pair? a)) (not (pair? b)))
+           (eq? a b)]
+          [(and (pair? a) (pair? b))
+           (and (eq? (car a) (car b))
+                (equal? (cdr a) (cdr b)))]
+          [else #f]))
+
+  (println (equal? 'a '(a)))
+  (println (equal? '(this is a list) '(this is a list)))
+  (println (equal? '(this is a list) '(this (is a) list)))
+   #+end_src
+
+   #+RESULTS:
+   : #f
+   : #t
+   : #f
+
+** 2.55
+   #+begin_src scheme
+  (car ''abracadabra)
+
+  ;; equals
+  (car '(quote abracadabra))
+
+  ;; equals
+  (car (list 'quote 'abracadabra))
+
+  ;; result
+  quote
+   #+end_src
+
+** 2.56
+   #+NAME: define-sum-proc
+   #+begin_src scheme
+     (define (make-sum a1 a2)
+       (cond ((=number? a1 0) a2)
+             ((=number? a2 0) a1)
+             ((and (number? a1) (number? a2)) (+ a1 a2))
+             (else (list '+ a1 a2))))
+
+     (define (sum? x)
+       (and (pair? x) (eq? (car x) '+)))
+
+     (define (addend s) (cadr s))
+
+     (define (augend s) (caddr s))
+   #+end_src
+
+   #+NAME: define-product-proc
+   #+begin_src scheme
+     (define (make-product m1 m2)
+       (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+             ((=number? m1 1) m2)
+             ((=number? m2 1) m1)
+             ((and (number? m1) (number? m2)) (* m1 m2))
+             (else (list '* m1 m2))))
+
+     (define (product? x)
+       (and (pair? x) (eq? (car x) '*)))
+
+     (define (multiplier p) (cadr p))
+
+     (define (multiplicand p) (caddr p))
+   #+end_src
+
+   #+NAME: define-exponentiation-proc
+   #+begin_src scheme
+     (define (exponentiation? x)
+       (and (pair? x) (eq? (car x) '**)))
+
+     (define (base e) (cadr e))
+
+     (define (exponent e) (caddr e))
+
+     (define (make-exponentiation b e)
+       (cond [(=number? e 0) 1]
+             [(=number? e 1) b]
+             [(and (number? b) (number? e)) (expt b e)]
+             [else (list '** b e)]))
+   #+end_src
+
+   #+NAME: define-exp
+   #+begin_src scheme
+     (define (variable? x) (symbol? x))
+
+     (define (same-variable? v1 v2)
+       (and (variable? v1) (variable? v2) (eq? v1 v2)))
+
+     (define (=number? exp num)
+       (and (number? exp) (= exp num)))
+
+     (define (deriv exp var)
+       (cond ((number? exp) 0)
+             ((variable? exp)
+              (if (same-variable? exp var) 1 0))
+             ((sum? exp)
+              (make-sum (deriv (addend exp) var)
+                        (deriv (augend exp) var)))
+             ((product? exp)
+              (make-sum
+               (make-product (multiplier exp)
+                             (deriv (multiplicand exp) var))
+               (make-product (deriv (multiplier exp) var)
+                             (multiplicand exp))))
+             ((exponentiation? exp)
+              (make-product (make-product (exponent exp)
+                                          (make-exponentiation (base exp) (- (exponent exp) 1)))
+                            (deriv (base exp) var)))
+             (else
+              (error "unknown expression type -- DERIV" exp))))
+   #+end_src
+
+   #+begin_src scheme :results output :exports both :noweb yes
+     <<define-sum-proc>>
+
+     <<define-product-proc>>
+
+     <<define-exponentiation-proc>>
+
+     <<define-exp>>
+
+     (println (deriv '(+ x 3) 'x))
+
+     (println (deriv '(* x y) 'x))
+
+     (println (deriv '(* (* x y) (+ x 3)) 'x))
+
+     (println (deriv '(+ (+ x 3) (** x 3)) 'x))
+   #+end_src
+
+   #+RESULTS:
+   : 1
+   : 'y
+   : '(+ (* x y) (* y (+ x 3)))
+   : '(+ 1 (* 3 (** x 2)))
+
+** 2.57
+   #+begin_src scheme :results output :exports both :noweb yes
+     <<define-exponentiation-proc>>
+
+     <<define-exp>>
+
+     (define (make-sum a1 a2)
+       (cond ((=number? a1 0) a2)
+             ((=number? a2 0) a1)
+             ((and (number? a1) (number? a2)) (+ a1 a2))
+             (else (list '+ a1 a2))))
+
+     (define (sum? x)
+       (and (pair? x) (eq? (car x) '+)))
+
+     (define (addend s) (cadr s))
+
+     (define (augend s)
+       (cond [(null? (cdddr s)) (caddr s)]
+             [else (append '(+) (cddr s))]))
+
+     (define (make-product m1 m2)
+       (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+             ((=number? m1 1) m2)
+             ((=number? m2 1) m1)
+             ((and (number? m1) (number? m2)) (* m1 m2))
+             (else (list '* m1 m2))))
+
+     (define (product? x)
+       (and (pair? x) (eq? (car x) '*)))
+
+     (define (multiplier p) (cadr p))
+
+     (define (multiplicand p)
+       (cond [(null? (cdddr p)) (caddr p)]
+             [else (append '(*) (cddr p))]))
+
+     (println (deriv '(* x y (+ x 3)) 'x))
+   #+end_src
+
+   #+RESULTS:
+   : '(+ (* x y) (* y (+ x 3)))
+
+** 2.58
+   #+begin_src scheme :results output :exports both :noweb yes
+     <<define-exp>>
+
+     (define (make-sum a1 a2)
+       (cond ((=number? a1 0) a2)
+             ((=number? a2 0) a1)
+             ((and (number? a1) (number? a2)) (+ a1 a2))
+             (else (list a1 '+ a2))))
+
+     (define (sum? x)
+       (and (pair? x) (eq? (cadr x) '+)))
+
+     (define (addend s) (car s))
+
+     (define (augend s) (caddr s))
+
+     (define (make-product m1 m2)
+       (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+             ((=number? m1 1) m2)
+             ((=number? m2 1) m1)
+             ((and (number? m1) (number? m2)) (* m1 m2))
+             (else (list m1 '* m2))))
+
+     (define (product? x)
+       (and (pair? x) (eq? (cadr x) '*)))
+
+     (define (multiplier p) (car p))
+
+     (define (multiplicand p) (caddr p))
+
+     (define (exponentiation? x)
+       (and (pair? x) (eq? (cadr x) '**)))
+
+     (define (base e) (car e))
+
+     (define (exponent e) (caddr e))
+
+     (define (make-exponentiation b e)
+       (cond [(=number? e 0) 1]
+             [(=number? e 1) b]
+             [(and (number? b) (number? e)) (expt b e)]
+             [else (list b '** e)]))
+
+     (println (deriv '(x + (3 * (x + (y + 2)))) 'x))
+     (println (deriv '(x ** 3) 'x))
+   #+end_src
+
+   #+RESULTS:
+   : 4
+   : '(3 * (x ** 2))
+
+** TODO 2.73
+** TODO 2.74
+** TODO 2.75
+** TODO 2.76
